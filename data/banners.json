@@ -1,0 +1,38 @@
+[
+  {
+    "id": "banner-hero",
+    "title": "Timeless Elegance in Every Thread",
+    "subtitle": "Discover our curated collection of heritage Kanchipuram and handcrafted sarees.",
+    "image": "https://images.unsplash.com/photo-1583391733956-3750e0ff4e8b?w=1600&auto=format&fit=crop",
+    "link": "/collection",
+    "type": "home_banner",
+    "isActive": true
+  },
+  {
+    "id": "banner-festival",
+    "title": "Festive Splendor Collection",
+    "subtitle": "Handpicked silk masterworks to add light and luxury to your special occasions.",
+    "image": "/uploads/fake-autograph-samples-hand-dr-1784469461017-988526312.jpg",
+    "link": "/collection?occasion=Festivals",
+    "type": "festival_banner",
+    "isActive": true
+  },
+  {
+    "id": "banner-offers",
+    "title": "Atelier Handloom Specials",
+    "subtitle": "Explore flat prices and breathable drapes on our premium linen and handloom cotton classics.",
+    "image": "https://images.unsplash.com/photo-1602751584552-8ba73aad10e1?w=1600&auto=format&fit=crop",
+    "link": "/collection?category=linen-cotton",
+    "type": "offers_banner",
+    "isActive": true
+  },
+  {
+    "id": "banner-wedding",
+    "title": "The Golden Weaves of Kerala",
+    "subtitle": "Bespoke bridal tissue silks and fine Kasavu sarees handcrafted for your wedding day.",
+    "image": "https://images.unsplash.com/photo-1610030469983-98e550d6193c?w=1600&auto=format&fit=crop",
+    "link": "/collection?category=kanchipuram-silk",
+    "type": "home_banner",
+    "isActive": false
+  }
+]
