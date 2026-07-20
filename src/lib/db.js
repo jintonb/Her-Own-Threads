@@ -1,7 +1,14 @@
 import { createClient } from '@libsql/client';
 import path from 'path';
 
-const url = process.env.TURSO_DATABASE_URL || process.env.DATABASE_URL || `file:${path.join(process.cwd(), 'data', 'catalog.db')}`;
+const isVercel = Boolean(process.env.VERCEL);
+
+// If Turso Cloud DB URL is provided, connect to Cloud DB.
+// Otherwise, open local catalog.db (using ?mode=ro on Vercel read-only filesystem to prevent SQLITE_CANTOPEN errors).
+const dbFilePath = path.join(process.cwd(), 'data', 'catalog.db');
+const defaultFileUrl = `file:${dbFilePath}${isVercel ? '?mode=ro' : ''}`;
+
+const url = process.env.TURSO_DATABASE_URL || process.env.DATABASE_URL || defaultFileUrl;
 const authToken = process.env.TURSO_AUTH_TOKEN;
 
 const db = createClient({
@@ -9,10 +16,10 @@ const db = createClient({
   authToken,
 });
 
-// Helper to ensure tables exist if running on a new DB
+// Helper to ensure tables exist if running on a new DB (skip if read-only on Vercel)
 let tablesInitialized = false;
 async function ensureTables() {
-  if (tablesInitialized) return;
+  if (tablesInitialized || isVercel) return;
   try {
     await db.execute(`
       CREATE TABLE IF NOT EXISTS categories (
@@ -72,14 +79,19 @@ async function ensureTables() {
 
 // ---------------- CATEGORY HELPERS ----------------
 export async function getCategories() {
-  await ensureTables();
-  const res = await db.execute('SELECT * FROM categories');
-  return res.rows.map(r => ({
-    id: r.id,
-    name: r.name,
-    description: r.description,
-    image: r.image
-  }));
+  try {
+    await ensureTables();
+    const res = await db.execute('SELECT * FROM categories');
+    return res.rows.map(r => ({
+      id: String(r.id),
+      name: String(r.name),
+      description: String(r.description || ''),
+      image: String(r.image || '')
+    }));
+  } catch (err) {
+    console.error('getCategories DB Error:', err);
+    return [];
+  }
 }
 
 export async function saveCategories(categories) {
@@ -103,64 +115,74 @@ export async function saveCategories(categories) {
 
 // ---------------- PRODUCT HELPERS ----------------
 export async function getProducts() {
-  await ensureTables();
-  const res = await db.execute('SELECT * FROM products ORDER BY datetime(created_at) DESC');
-  return res.rows.map(r => ({
-    code: r.code,
-    name: r.name,
-    category: r.category,
-    price: r.price,
-    fabric: r.fabric,
-    color: r.color,
-    work: r.work,
-    border: r.border,
-    blouseIncluded: r.blouse_included === 1,
-    length: r.length,
-    weight: r.weight,
-    occasion: r.occasion,
-    care: r.care,
-    description: r.description,
-    thumbnail: r.thumbnail,
-    images: r.images ? JSON.parse(r.images) : [],
-    videos: r.videos ? JSON.parse(r.videos) : [],
-    isPublished: r.is_published === 1,
-    isFeatured: r.is_featured === 1,
-    isNewArrival: r.is_new_arrival === 1,
-    createdAt: r.created_at,
-  }));
+  try {
+    await ensureTables();
+    const res = await db.execute('SELECT * FROM products ORDER BY datetime(created_at) DESC');
+    return res.rows.map(r => ({
+      code: String(r.code),
+      name: String(r.name),
+      category: String(r.category),
+      price: r.price ? Number(r.price) : null,
+      fabric: String(r.fabric || ''),
+      color: String(r.color || ''),
+      work: String(r.work || ''),
+      border: String(r.border || ''),
+      blouseIncluded: Number(r.blouse_included) === 1,
+      length: String(r.length || ''),
+      weight: String(r.weight || ''),
+      occasion: String(r.occasion || ''),
+      care: String(r.care || ''),
+      description: String(r.description || ''),
+      thumbnail: String(r.thumbnail || ''),
+      images: r.images ? JSON.parse(String(r.images)) : [],
+      videos: r.videos ? JSON.parse(String(r.videos)) : [],
+      isPublished: Number(r.is_published) === 1,
+      isFeatured: Number(r.is_featured) === 1,
+      isNewArrival: Number(r.is_new_arrival) === 1,
+      createdAt: String(r.created_at || new Date().toISOString()),
+    }));
+  } catch (err) {
+    console.error('getProducts DB Error:', err);
+    return [];
+  }
 }
 
 export async function getProductByCode(code) {
-  await ensureTables();
-  const res = await db.execute({
-    sql: 'SELECT * FROM products WHERE LOWER(code) = LOWER(?)',
-    args: [code]
-  });
-  if (res.rows.length === 0) return null;
-  const r = res.rows[0];
-  return {
-    code: r.code,
-    name: r.name,
-    category: r.category,
-    price: r.price,
-    fabric: r.fabric,
-    color: r.color,
-    work: r.work,
-    border: r.border,
-    blouseIncluded: r.blouse_included === 1,
-    length: r.length,
-    weight: r.weight,
-    occasion: r.occasion,
-    care: r.care,
-    description: r.description,
-    thumbnail: r.thumbnail,
-    images: r.images ? JSON.parse(r.images) : [],
-    videos: r.videos ? JSON.parse(r.videos) : [],
-    isPublished: r.is_published === 1,
-    isFeatured: r.is_featured === 1,
-    isNewArrival: r.is_new_arrival === 1,
-    createdAt: r.created_at,
-  };
+  try {
+    await ensureTables();
+    const res = await db.execute({
+      sql: 'SELECT * FROM products WHERE LOWER(code) = LOWER(?)',
+      args: [code]
+    });
+    if (res.rows.length === 0) return null;
+    const r = res.rows[0];
+    return {
+      code: String(r.code),
+      name: String(r.name),
+      category: String(r.category),
+      price: r.price ? Number(r.price) : null,
+      fabric: String(r.fabric || ''),
+      color: String(r.color || ''),
+      work: String(r.work || ''),
+      border: String(r.border || ''),
+      blouseIncluded: Number(r.blouse_included) === 1,
+      length: String(r.length || ''),
+      weight: String(r.weight || ''),
+      occasion: String(r.occasion || ''),
+      care: String(r.care || ''),
+      description: String(r.description || ''),
+      thumbnail: String(r.thumbnail || ''),
+      images: r.images ? JSON.parse(String(r.images)) : [],
+      videos: r.videos ? JSON.parse(String(r.videos)) : [],
+      isPublished: Number(r.is_published) === 1,
+      isFeatured: Number(r.is_featured) === 1,
+      isNewArrival: Number(r.is_new_arrival) === 1,
+      createdAt: String(r.created_at || new Date().toISOString()),
+    };
+  } catch (err) {
+    console.error('getProductByCode DB Error:', err);
+    return null;
+  }
 }
 
 export async function saveProducts(products) {
@@ -210,17 +232,22 @@ export async function saveProducts(products) {
 
 // ---------------- BANNER HELPERS ----------------
 export async function getBanners() {
-  await ensureTables();
-  const res = await db.execute('SELECT * FROM banners');
-  return res.rows.map(b => ({
-    id: b.id,
-    title: b.title,
-    subtitle: b.subtitle,
-    image: b.image,
-    link: b.link,
-    type: b.type,
-    isActive: b.is_active === 1
-  }));
+  try {
+    await ensureTables();
+    const res = await db.execute('SELECT * FROM banners');
+    return res.rows.map(b => ({
+      id: String(b.id),
+      title: String(b.title),
+      subtitle: String(b.subtitle || ''),
+      image: String(b.image || ''),
+      link: String(b.link || ''),
+      type: String(b.type),
+      isActive: Number(b.is_active) === 1
+    }));
+  } catch (err) {
+    console.error('getBanners DB Error:', err);
+    return [];
+  }
 }
 
 export async function saveBanners(banners) {
@@ -254,29 +281,33 @@ export async function saveBanners(banners) {
 export async function generateNextProductCode() {
   await ensureTables();
   let lastSerial = 1007;
-  const metaRes = await db.execute({
-    sql: 'SELECT value FROM metadata WHERE key = ?',
-    args: ['last_product_serial']
-  });
-  
-  if (metaRes.rows.length > 0) {
-    lastSerial = parseInt(metaRes.rows[0].value, 10);
-  } else {
-    const prodRes = await db.execute('SELECT code FROM products');
-    const serials = prodRes.rows
-      .map(r => {
-        const match = r.code.match(/VK-(\d+)/i);
-        return match ? parseInt(match[1], 10) : null;
-      })
-      .filter(Boolean);
-    if (serials.length > 0) {
-      lastSerial = Math.max(...serials);
+  try {
+    const metaRes = await db.execute({
+      sql: 'SELECT value FROM metadata WHERE key = ?',
+      args: ['last_product_serial']
+    });
+    
+    if (metaRes.rows.length > 0) {
+      lastSerial = parseInt(metaRes.rows[0].value, 10);
+    } else {
+      const prodRes = await db.execute('SELECT code FROM products');
+      const serials = prodRes.rows
+        .map(r => {
+          const match = String(r.code).match(/VK-(\d+)/i);
+          return match ? parseInt(match[1], 10) : null;
+        })
+        .filter(Boolean);
+      if (serials.length > 0) {
+        lastSerial = Math.max(...serials);
+      }
     }
+  } catch (err) {
+    console.error('generateNextProductCode DB error:', err);
   }
 
   const nextSerial = lastSerial + 1;
-  const tx = await db.transaction('write');
   try {
+    const tx = await db.transaction('write');
     await tx.execute({
       sql: 'DELETE FROM metadata WHERE key = ?',
       args: ['last_product_serial']
@@ -286,8 +317,7 @@ export async function generateNextProductCode() {
       args: ['last_product_serial', String(nextSerial)]
     });
     await tx.commit();
-  } catch (e) {
-    await tx.rollback();
-  }
+  } catch (e) {}
+
   return `VK-${nextSerial}`;
 }
