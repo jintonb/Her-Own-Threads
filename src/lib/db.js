@@ -3,10 +3,9 @@ import path from 'path';
 
 const isVercel = Boolean(process.env.VERCEL);
 
-// If Turso Cloud DB URL is provided, connect to Cloud DB.
-// Otherwise, open local catalog.db (using ?mode=ro on Vercel read-only filesystem to prevent SQLITE_CANTOPEN errors).
+// Local SQLite database file path bundled via next.config.mjs outputFileTracingIncludes
 const dbFilePath = path.join(process.cwd(), 'data', 'catalog.db');
-const defaultFileUrl = `file:${dbFilePath}${isVercel ? '?mode=ro' : ''}`;
+const defaultFileUrl = `file:${dbFilePath}`;
 
 const url = process.env.TURSO_DATABASE_URL || process.env.DATABASE_URL || defaultFileUrl;
 const authToken = process.env.TURSO_AUTH_TOKEN;
@@ -16,7 +15,7 @@ const db = createClient({
   authToken,
 });
 
-// Helper to ensure tables exist if running on a new DB (skip if read-only on Vercel)
+// Helper to ensure tables exist if running on a new DB
 let tablesInitialized = false;
 async function ensureTables() {
   if (tablesInitialized || isVercel) return;
