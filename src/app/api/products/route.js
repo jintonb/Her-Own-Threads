@@ -1,13 +1,6 @@
-import { cookies } from 'next/headers';
 import { getProducts, saveProducts, generateNextProductCode } from '@/lib/db';
+import { isAuthorized } from '@/lib/auth';
 import { NextResponse } from 'next/server';
-
-// Helper to check admin authentication
-async function isAdmin() {
-  const cookieStore = await cookies();
-  const session = cookieStore.get('vasthra_admin_session');
-  return session && session.value === 'authenticated';
-}
 
 export async function GET(request) {
   try {
@@ -22,12 +15,10 @@ export async function GET(request) {
     let filteredProducts = [...products];
 
     // Filter by publish status (non-admins only see published)
-    const authenticated = await isAdmin();
+    const authenticated = await isAuthorized(request);
     if (!authenticated && !includeDrafts) {
       filteredProducts = filteredProducts.filter(p => p.isPublished === true);
     } else if (!includeDrafts) {
-      // By default, if not explicitly requested, show only published to visitors
-      // If includeDrafts is specified and user is admin, show all
       if (!authenticated) {
         filteredProducts = filteredProducts.filter(p => p.isPublished === true);
       }
@@ -73,8 +64,8 @@ export async function GET(request) {
 }
 
 export async function POST(request) {
-  if (!(await isAdmin())) {
-    return NextResponse.json({ success: false, message: 'Unauthorized' }, { status: 401 });
+  if (!(await isAuthorized(request))) {
+    return NextResponse.json({ success: false, message: 'Unauthorized. Valid API Key or session required.' }, { status: 401 });
   }
 
   try {
@@ -93,7 +84,7 @@ export async function POST(request) {
 
     const product = {
       ...newProduct,
-      code: generatedCode, // Override or assign system generated code
+      code: generatedCode, // Assign system generated code
       createdAt: new Date().toISOString(),
     };
 

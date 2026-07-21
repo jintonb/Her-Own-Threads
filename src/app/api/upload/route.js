@@ -2,6 +2,7 @@ import { S3Client, PutObjectCommand } from '@aws-sdk/client-s3';
 import { promises as fs } from 'fs';
 import path from 'path';
 import { NextResponse } from 'next/server';
+import { isAuthorized } from '@/lib/auth';
 
 const region = process.env.AWS_REGION || process.env.NEXT_PUBLIC_AWS_REGION;
 const accessKeyId = process.env.AWS_ACCESS_KEY_ID;
@@ -12,6 +13,10 @@ const bucketName = process.env.AWS_S3_BUCKET_NAME;
 const isS3Configured = Boolean(accessKeyId && secretAccessKey && bucketName && region);
 
 export async function POST(request) {
+  if (!(await isAuthorized(request))) {
+    return NextResponse.json({ success: false, message: 'Unauthorized. Valid API Key or session required.' }, { status: 401 });
+  }
+
   try {
     const { searchParams } = new URL(request.url);
     const formData = await request.formData();

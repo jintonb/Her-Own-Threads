@@ -1,15 +1,13 @@
 import { NextResponse } from 'next/server';
 import { cookies } from 'next/headers';
+import { getAdminApiKey, isAuthorized } from '@/lib/auth';
 
 const ADMIN_USERNAME = 'admin';
-const ADMIN_PASSWORD = 'vasthra123'; // Simple default credential
+const DEFAULT_PASSWORD = 'vasthra123';
 const SESSION_COOKIE = 'vasthra_admin_session';
 
-export async function GET() {
-  const cookieStore = await cookies();
-  const session = cookieStore.get(SESSION_COOKIE);
-
-  if (session && session.value === 'authenticated') {
+export async function GET(request) {
+  if (await isAuthorized(request)) {
     return NextResponse.json({ authenticated: true });
   }
 
@@ -18,10 +16,22 @@ export async function GET() {
 
 export async function POST(request) {
   try {
-    const { username, password } = await request.json();
+    const body = await request.json();
+    const { username, password, apiKey } = body;
+    const configuredApiKey = getAdminApiKey();
 
-    if (username === ADMIN_USERNAME && password === ADMIN_PASSWORD) {
-      const response = NextResponse.json({ success: true, message: 'Logged in successfully' });
+    // Check if valid API key is passed directly or if credentials match
+    const isValidApiKey = (apiKey && apiKey === configuredApiKey) ||
+                          (request.headers.get('x-api-key') === configuredApiKey);
+                          
+    const isValidCredentials = (username === ADMIN_USERNAME || !username) &&
+                               (password === configuredApiKey || password === DEFAULT_PASSWORD);
+
+    if (isValidApiKey || isValidCredentials) {
+      const response = NextResponse.json({ 
+        success: true, 
+        message: 'Authenticated successfully via API Key / Credentials' 
+      });
       
       const cookieStore = await cookies();
       cookieStore.set(SESSION_COOKIE, 'authenticated', {
@@ -36,7 +46,7 @@ export async function POST(request) {
     }
 
     return NextResponse.json(
-      { success: false, message: 'Invalid username or password' },
+      { success: false, message: 'Invalid API Key or Credentials' },
       { status: 401 }
     );
   } catch (error) {

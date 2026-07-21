@@ -1,13 +1,6 @@
-import { cookies } from 'next/headers';
 import { getBanners, saveBanners } from '@/lib/db';
+import { isAuthorized } from '@/lib/auth';
 import { NextResponse } from 'next/server';
-
-// Helper to check admin authentication
-async function isAdmin() {
-  const cookieStore = await cookies();
-  const session = cookieStore.get('vasthra_admin_session');
-  return session && session.value === 'authenticated';
-}
 
 export async function GET() {
   const banners = await getBanners();
@@ -15,8 +8,8 @@ export async function GET() {
 }
 
 export async function POST(request) {
-  if (!(await isAdmin())) {
-    return NextResponse.json({ success: false, message: 'Unauthorized' }, { status: 401 });
+  if (!(await isAuthorized(request))) {
+    return NextResponse.json({ success: false, message: 'Unauthorized. Valid API Key or session required.' }, { status: 401 });
   }
 
   try {
@@ -27,7 +20,6 @@ export async function POST(request) {
 
     const banners = await getBanners();
     
-    // Check if exists, update or add
     const index = banners.findIndex(b => b.id.toLowerCase() === banner.id.toLowerCase());
     if (index !== -1) {
       banners[index] = { ...banners[index], ...banner };
@@ -43,8 +35,8 @@ export async function POST(request) {
 }
 
 export async function DELETE(request) {
-  if (!(await isAdmin())) {
-    return NextResponse.json({ success: false, message: 'Unauthorized' }, { status: 401 });
+  if (!(await isAuthorized(request))) {
+    return NextResponse.json({ success: false, message: 'Unauthorized. Valid API Key or session required.' }, { status: 401 });
   }
 
   try {
