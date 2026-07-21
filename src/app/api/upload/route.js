@@ -4,18 +4,18 @@ import path from 'path';
 import { NextResponse } from 'next/server';
 import { isAuthorized } from '@/lib/auth';
 
-const region = process.env.AWS_REGION || process.env.NEXT_PUBLIC_AWS_REGION;
-const accessKeyId = process.env.AWS_ACCESS_KEY_ID;
-const secretAccessKey = process.env.AWS_SECRET_ACCESS_KEY;
-const bucketName = process.env.AWS_S3_BUCKET_NAME;
-
-// Check if S3 credentials are configured
-const isS3Configured = Boolean(accessKeyId && secretAccessKey && bucketName && region);
-
 export async function POST(request) {
   if (!(await isAuthorized(request))) {
     return NextResponse.json({ success: false, message: 'Unauthorized. Valid API Key or session required.' }, { status: 401 });
   }
+
+  const region = process.env.AWS_REGION || process.env.NEXT_PUBLIC_AWS_REGION || 'ap-south-1';
+  const accessKeyId = process.env.AWS_ACCESS_KEY_ID;
+  const secretAccessKey = process.env.AWS_SECRET_ACCESS_KEY;
+  const bucketName = process.env.AWS_S3_BUCKET_NAME;
+
+  const isS3Configured = Boolean(accessKeyId && secretAccessKey && bucketName && region);
+  const isVercel = Boolean(process.env.VERCEL);
 
   try {
     const { searchParams } = new URL(request.url);
@@ -28,7 +28,7 @@ export async function POST(request) {
 
     // Determine target subfolder (default: 'products', 'banners' for banners)
     let folder = searchParams.get('folder') || formData.get('folder') || 'products';
-    folder = folder.replace(/[^a-zA-Z0-9_-]/g, ''); // sanitize folder name
+    folder = folder.replace(/[^a-zA-Z0-9_-]/g, '');
 
     const bytes = await file.arrayBuffer();
     const buffer = Buffer.from(bytes);
@@ -75,7 +75,15 @@ export async function POST(request) {
       });
     }
 
-    // 2. Fallback to local disk storage if S3 credentials are not configured yet
+    // If running on Vercel and S3 is not configured, local file writes are blocked by Vercel Lambda read-only file system
+    if (isVercel) {
+      return NextResponse.json({
+        success: false,
+        message: 'AWS S3 environment variables (AWS_ACCESS_KEY_ID, AWS_SECRET_ACCESS_KEY, AWS_S3_BUCKET_NAME) are missing in Vercel Project Settings.'
+      }, { status: 400 });
+    }
+
+    // 2. Fallback to local disk storage on local dev environment
     const uploadDir = path.join(process.cwd(), 'public', 'uploads', folder);
     await fs.mkdir(uploadDir, { recursive: true });
     
@@ -91,6 +99,9 @@ export async function POST(request) {
     });
   } catch (error) {
     console.error('File upload error:', error);
-    return NextResponse.json({ success: false, message: error.message || 'File upload failed' }, { status: 500 });
+    return NextResponse.json({ 
+      success: false, 
+      message: error.message || 'File upload failed' 
+    }, { status: 500 });
   }
 }
