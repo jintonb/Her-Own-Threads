@@ -1,12 +1,26 @@
 import { createClient } from '@libsql/client';
+import { copyFileSync, existsSync } from 'fs';
 import path from 'path';
 
 const isVercel = Boolean(process.env.VERCEL);
 
-// Local SQLite database file path bundled via next.config.mjs outputFileTracingIncludes
-const dbFilePath = path.join(process.cwd(), 'data', 'catalog.db');
-const defaultFileUrl = `file:${dbFilePath}`;
+// On Vercel, copy the bundled catalog.db to writable /tmp directory so SQLite can read & write freely
+let dbFilePath = path.join(process.cwd(), 'data', 'catalog.db');
 
+if (isVercel) {
+  const tmpDbPath = '/tmp/catalog.db';
+  try {
+    if (!existsSync(tmpDbPath)) {
+      copyFileSync(dbFilePath, tmpDbPath);
+      console.log('✓ Successfully copied catalog.db to writable /tmp/catalog.db on Vercel');
+    }
+    dbFilePath = tmpDbPath;
+  } catch (err) {
+    console.error('Failed to copy DB to /tmp, falling back to original path:', err);
+  }
+}
+
+const defaultFileUrl = `file:${dbFilePath}`;
 const url = process.env.TURSO_DATABASE_URL || process.env.DATABASE_URL || defaultFileUrl;
 const authToken = process.env.TURSO_AUTH_TOKEN;
 
@@ -18,7 +32,7 @@ const db = createClient({
 // Helper to ensure tables exist if running on a new DB
 let tablesInitialized = false;
 async function ensureTables() {
-  if (tablesInitialized || isVercel) return;
+  if (tablesInitialized) return;
   try {
     await db.execute(`
       CREATE TABLE IF NOT EXISTS categories (
