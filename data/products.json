@@ -1,5 +1,30 @@
 [
   {
+    "code": "VK-1009",
+    "name": "Tonic Pharmacy",
+    "category": "kanchipuram-silk",
+    "price": 2132,
+    "fabric": "",
+    "color": "Green",
+    "work": "",
+    "border": "Mughal Floral Zari Border",
+    "blouseIncluded": true,
+    "length": "5.5 meters + 0.8 meter blouse",
+    "weight": "600g",
+    "occasion": "",
+    "care": "Dry Clean Only",
+    "description": "",
+    "thumbnail": "https://vasthrakatha-676206924134-ap-south-1-an.s3.ap-south-1.amazonaws.com/saree-catalog/products/media--6--1784653983528-908771918.jpg",
+    "images": [
+      "https://vasthrakatha-676206924134-ap-south-1-an.s3.ap-south-1.amazonaws.com/saree-catalog/products/media--6--1784653989148-650285124.jpg"
+    ],
+    "videos": [],
+    "isPublished": true,
+    "isFeatured": false,
+    "isNewArrival": false,
+    "createdAt": "2026-07-21T17:13:11.955Z"
+  },
+  {
     "code": "VK-1006",
     "name": "sari1",
     "category": "kanchipuram-silk",
@@ -126,28 +151,28 @@
     "createdAt": "2026-07-02T15:00:00.000Z"
   },
   {
-    "code": "VK-1009",
-    "name": "Tonic Pharmacy",
+    "code": "VK-1010",
+    "name": "sari4",
     "category": "kanchipuram-silk",
-    "price": 2132,
-    "fabric": "",
-    "color": "Green",
+    "price": 432432,
+    "fabric": "Katan Silk",
+    "color": "",
     "work": "",
-    "border": "Mughal Floral Zari Border",
+    "border": "",
     "blouseIncluded": true,
     "length": "5.5 meters + 0.8 meter blouse",
     "weight": "600g",
     "occasion": "",
     "care": "Dry Clean Only",
     "description": "",
-    "thumbnail": "https://vasthrakatha-676206924134-ap-south-1-an.s3.ap-south-1.amazonaws.com/saree-catalog/products/media--6--1784653983528-908771918.jpg",
+    "thumbnail": "https://vasthrakatha-676206924134-ap-south-1-an.s3.ap-south-1.amazonaws.com/saree-catalog/products/banner07-1784725250378-606409744.jpg",
     "images": [
-      "https://vasthrakatha-676206924134-ap-south-1-an.s3.ap-south-1.amazonaws.com/saree-catalog/products/media--6--1784653989148-650285124.jpg"
+      "https://vasthrakatha-676206924134-ap-south-1-an.s3.ap-south-1.amazonaws.com/saree-catalog/products/media--3--1784725252065-589716663.jpg"
     ],
     "videos": [],
     "isPublished": true,
     "isFeatured": false,
     "isNewArrival": false,
-    "createdAt": "2026-07-21T17:13:11.955Z"
+    "createdAt": "2026-07-22T13:00:59.177Z"
   }
 ]
