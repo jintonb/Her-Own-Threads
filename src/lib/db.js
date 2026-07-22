@@ -8,13 +8,10 @@ if (!databaseUrl) {
 
 const sqlClient = databaseUrl ? neon(databaseUrl) : null;
 
-// Standard execution wrapper to support queries with and without params
+// Standard execution wrapper to support queries with and without params using Neon's standard .query method
 async function queryDb(queryString, params = []) {
   if (!sqlClient) return [];
-  if (params.length > 0) {
-    return await sqlClient.query(queryString, params);
-  }
-  return await sqlClient(queryString);
+  return await sqlClient.query(queryString, params);
 }
 
 // Helper to ensure tables exist in Neon Postgres
