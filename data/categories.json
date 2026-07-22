@@ -1,0 +1,26 @@
+[
+  {
+    "id": "kanchipuram-silk",
+    "name": "Kanchipuram Silk",
+    "description": "Exquisite, heavy zari woven pure silk sarees from the temple town of Kanchipuram.",
+    "image": "https://vasthrakatha-676206924134-ap-south-1-an.s3.ap-south-1.amazonaws.com/saree-catalog/categories/cat-kanchipuram-silk-1784554409873-2695.jpg"
+  },
+  {
+    "id": "banarasi-weaves",
+    "name": "Banarasi Weaves",
+    "description": "Traditional gold and silver zari sarees crafted with fine silk from Varanasi.",
+    "image": "https://vasthrakatha-676206924134-ap-south-1-an.s3.ap-south-1.amazonaws.com/saree-catalog/categories/cat-banarasi-weaves-1784554410563-2946.jpg"
+  },
+  {
+    "id": "organza-elegance",
+    "name": "Organza Elegance",
+    "description": "Lightweight, sheer, and modern organza sarees with delicate embroidery and floral prints.",
+    "image": "https://vasthrakatha-676206924134-ap-south-1-an.s3.ap-south-1.amazonaws.com/saree-catalog/categories/cat-organza-elegance-1784554410830-137.jpg"
+  },
+  {
+    "id": "linen-cotton",
+    "name": "Linen & Cotton Classics",
+    "description": "Breathable, simple, and elegant daily and office wear sarees in soft linen and handloom cotton.",
+    "image": "https://vasthrakatha-676206924134-ap-south-1-an.s3.ap-south-1.amazonaws.com/saree-catalog/categories/cat-linen-cotton-1784554411027-481.jpg"
+  }
+]
