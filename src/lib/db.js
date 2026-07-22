@@ -6,14 +6,23 @@ if (!databaseUrl) {
   console.warn('Warning: DATABASE_URL environment variable is missing. Connect your database to activate database queries.');
 }
 
-const sql = databaseUrl ? neon(databaseUrl) : null;
+const sqlClient = databaseUrl ? neon(databaseUrl) : null;
+
+// Standard execution wrapper to support queries with and without params
+async function queryDb(queryString, params = []) {
+  if (!sqlClient) return [];
+  if (params.length > 0) {
+    return await sqlClient.query(queryString, params);
+  }
+  return await sqlClient(queryString);
+}
 
 // Helper to ensure tables exist in Neon Postgres
 let tablesInitialized = false;
 async function ensureTables() {
-  if (!sql || tablesInitialized) return;
+  if (!sqlClient || tablesInitialized) return;
   try {
-    await sql(`
+    await queryDb(`
       CREATE TABLE IF NOT EXISTS categories (
         id VARCHAR(100) PRIMARY KEY,
         name VARCHAR(255) NOT NULL,
@@ -21,7 +30,7 @@ async function ensureTables() {
         image TEXT
       );
     `);
-    await sql(`
+    await queryDb(`
       CREATE TABLE IF NOT EXISTS products (
         code VARCHAR(100) PRIMARY KEY,
         name VARCHAR(255) NOT NULL,
@@ -46,7 +55,7 @@ async function ensureTables() {
         created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
       );
     `);
-    await sql(`
+    await queryDb(`
       CREATE TABLE IF NOT EXISTS banners (
         id VARCHAR(100) PRIMARY KEY,
         title VARCHAR(255) NOT NULL,
@@ -57,7 +66,7 @@ async function ensureTables() {
         is_active BOOLEAN DEFAULT TRUE
       );
     `);
-    await sql(`
+    await queryDb(`
       CREATE TABLE IF NOT EXISTS metadata (
         key VARCHAR(100) PRIMARY KEY,
         value TEXT NOT NULL
@@ -71,10 +80,10 @@ async function ensureTables() {
 
 // ---------------- CATEGORY HELPERS ----------------
 export async function getCategories() {
-  if (!sql) return [];
+  if (!sqlClient) return [];
   try {
     await ensureTables();
-    const rows = await sql('SELECT * FROM categories ORDER BY name ASC');
+    const rows = await queryDb('SELECT * FROM categories ORDER BY name ASC');
     return rows.map(r => ({
       id: r.id,
       name: r.name,
@@ -88,12 +97,12 @@ export async function getCategories() {
 }
 
 export async function saveCategories(categories) {
-  if (!sql) return false;
+  if (!sqlClient) return false;
   try {
     await ensureTables();
-    await sql('DELETE FROM categories');
+    await queryDb('DELETE FROM categories');
     for (const item of categories) {
-      await sql(
+      await queryDb(
         'INSERT INTO categories (id, name, description, image) VALUES ($1, $2, $3, $4)',
         [item.id, item.name, item.description || '', item.image || '']
       );
@@ -107,10 +116,10 @@ export async function saveCategories(categories) {
 
 // ---------------- PRODUCT HELPERS ----------------
 export async function getProducts() {
-  if (!sql) return [];
+  if (!sqlClient) return [];
   try {
     await ensureTables();
-    const rows = await sql('SELECT * FROM products ORDER BY created_at DESC');
+    const rows = await queryDb('SELECT * FROM products ORDER BY created_at DESC');
     return rows.map(r => ({
       code: r.code,
       name: r.name,
@@ -141,10 +150,10 @@ export async function getProducts() {
 }
 
 export async function getProductByCode(code) {
-  if (!sql) return null;
+  if (!sqlClient) return null;
   try {
     await ensureTables();
-    const rows = await sql('SELECT * FROM products WHERE LOWER(code) = LOWER($1)', [code]);
+    const rows = await queryDb('SELECT * FROM products WHERE LOWER(code) = LOWER($1)', [code]);
     if (rows.length === 0) return null;
     const r = rows[0];
     return {
@@ -177,12 +186,12 @@ export async function getProductByCode(code) {
 }
 
 export async function saveProducts(products) {
-  if (!sql) return false;
+  if (!sqlClient) return false;
   try {
     await ensureTables();
-    await sql('DELETE FROM products');
+    await queryDb('DELETE FROM products');
     for (const item of products) {
-      await sql(`
+      await queryDb(`
         INSERT INTO products (
           code, name, category, price, fabric, color, work, border,
           blouse_included, length, weight, occasion, care, description,
@@ -221,10 +230,10 @@ export async function saveProducts(products) {
 
 // ---------------- BANNER HELPERS ----------------
 export async function getBanners() {
-  if (!sql) return [];
+  if (!sqlClient) return [];
   try {
     await ensureTables();
-    const rows = await sql('SELECT * FROM banners');
+    const rows = await queryDb('SELECT * FROM banners');
     return rows.map(b => ({
       id: b.id,
       title: b.title,
@@ -241,12 +250,12 @@ export async function getBanners() {
 }
 
 export async function saveBanners(banners) {
-  if (!sql) return false;
+  if (!sqlClient) return false;
   try {
     await ensureTables();
-    await sql('DELETE FROM banners');
+    await queryDb('DELETE FROM banners');
     for (const item of banners) {
-      await sql(
+      await queryDb(
         'INSERT INTO banners (id, title, subtitle, image, link, type, is_active) VALUES ($1, $2, $3, $4, $5, $6, $7)',
         [
           item.id,
@@ -268,15 +277,15 @@ export async function saveBanners(banners) {
 
 // ---------------- AUTO-INCREMENT CODE GENERATOR ----------------
 export async function generateNextProductCode() {
-  if (!sql) return 'VK-1008';
+  if (!sqlClient) return 'VK-1008';
   try {
     await ensureTables();
     let lastSerial = 1007;
-    const metaRows = await sql('SELECT value FROM metadata WHERE key = $1', ['last_product_serial']);
+    const metaRows = await queryDb('SELECT value FROM metadata WHERE key = $1', ['last_product_serial']);
     if (metaRows.length > 0) {
       lastSerial = parseInt(metaRows[0].value, 10);
     } else {
-      const prodRows = await sql('SELECT code FROM products');
+      const prodRows = await queryDb('SELECT code FROM products');
       const serials = prodRows
         .map(r => {
           const match = String(r.code).match(/VK-(\d+)/i);
@@ -289,7 +298,7 @@ export async function generateNextProductCode() {
     }
 
     const nextSerial = lastSerial + 1;
-    await sql('INSERT INTO metadata (key, value) VALUES ($1, $2) ON CONFLICT (key) DO UPDATE SET value = EXCLUDED.value', [
+    await queryDb('INSERT INTO metadata (key, value) VALUES ($1, $2) ON CONFLICT (key) DO UPDATE SET value = EXCLUDED.value', [
       'last_product_serial',
       String(nextSerial)
     ]);

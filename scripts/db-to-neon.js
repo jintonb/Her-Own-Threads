@@ -2,7 +2,26 @@ import { neon } from '@neondatabase/serverless';
 import { promises as fs } from 'fs';
 import path from 'path';
 
+async function loadEnvLocal() {
+  try {
+    const envPath = path.join(process.cwd(), '.env.local');
+    const content = await fs.readFile(envPath, 'utf8');
+    const lines = content.split('\n');
+    for (const line of lines) {
+      const trimmed = line.trim();
+      if (trimmed && !trimmed.startsWith('#') && trimmed.includes('=')) {
+        const [key, ...valueParts] = trimmed.split('=');
+        const val = valueParts.join('=').trim();
+        process.env[key.trim()] = val;
+      }
+    }
+  } catch (err) {
+    console.log('Notice: .env.local reading note:', err.message);
+  }
+}
+
 async function migrateJsonToNeon() {
+  await loadEnvLocal();
   const neonUrl = process.env.DATABASE_URL || process.env.NEON_DATABASE_URL;
 
   if (!neonUrl) {
@@ -18,7 +37,7 @@ async function migrateJsonToNeon() {
   try {
     // 1. Create tables if they do not exist
     console.log('Creating tables in Neon...');
-    await sql(`
+    await sql.query(`
       CREATE TABLE IF NOT EXISTS categories (
         id VARCHAR(100) PRIMARY KEY,
         name VARCHAR(255) NOT NULL,
@@ -26,7 +45,7 @@ async function migrateJsonToNeon() {
         image TEXT
       );
     `);
-    await sql(`
+    await sql.query(`
       CREATE TABLE IF NOT EXISTS products (
         code VARCHAR(100) PRIMARY KEY,
         name VARCHAR(255) NOT NULL,
@@ -51,7 +70,7 @@ async function migrateJsonToNeon() {
         created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
       );
     `);
-    await sql(`
+    await sql.query(`
       CREATE TABLE IF NOT EXISTS banners (
         id VARCHAR(100) PRIMARY KEY,
         title VARCHAR(255) NOT NULL,
@@ -62,7 +81,7 @@ async function migrateJsonToNeon() {
         is_active BOOLEAN DEFAULT TRUE
       );
     `);
-    await sql(`
+    await sql.query(`
       CREATE TABLE IF NOT EXISTS metadata (
         key VARCHAR(100) PRIMARY KEY,
         value TEXT NOT NULL
@@ -73,9 +92,9 @@ async function migrateJsonToNeon() {
     console.log('Migrating categories...');
     const catData = await fs.readFile(path.join(process.cwd(), 'data', 'categories.json'), 'utf8');
     const categories = JSON.parse(catData);
-    await sql('DELETE FROM categories');
+    await sql.query('DELETE FROM categories');
     for (const item of categories) {
-      await sql(
+      await sql.query(
         'INSERT INTO categories (id, name, description, image) VALUES ($1, $2, $3, $4)',
         [item.id, item.name, item.description || '', item.image || '']
       );
@@ -86,9 +105,9 @@ async function migrateJsonToNeon() {
     console.log('Migrating banners...');
     const bannerData = await fs.readFile(path.join(process.cwd(), 'data', 'banners.json'), 'utf8');
     const banners = JSON.parse(bannerData);
-    await sql('DELETE FROM banners');
+    await sql.query('DELETE FROM banners');
     for (const item of banners) {
-      await sql(
+      await sql.query(
         'INSERT INTO banners (id, title, subtitle, image, link, type, is_active) VALUES ($1, $2, $3, $4, $5, $6, $7)',
         [
           item.id,
@@ -107,9 +126,9 @@ async function migrateJsonToNeon() {
     console.log('Migrating products...');
     const productData = await fs.readFile(path.join(process.cwd(), 'data', 'products.json'), 'utf8');
     const products = JSON.parse(productData);
-    await sql('DELETE FROM products');
+    await sql.query('DELETE FROM products');
     for (const item of products) {
-      await sql(`
+      await sql.query(`
         INSERT INTO products (
           code, name, category, price, fabric, color, work, border,
           blouse_included, length, weight, occasion, care, description,
@@ -145,9 +164,9 @@ async function migrateJsonToNeon() {
     console.log('Migrating metadata...');
     const metaData = await fs.readFile(path.join(process.cwd(), 'data', 'metadata.json'), 'utf8');
     const metadata = JSON.parse(metaData);
-    await sql('DELETE FROM metadata');
+    await sql.query('DELETE FROM metadata');
     for (const [key, value] of Object.entries(metadata)) {
-      await sql('INSERT INTO metadata (key, value) VALUES ($1, $2)', [key, String(value)]);
+      await sql.query('INSERT INTO metadata (key, value) VALUES ($1, $2)', [key, String(value)]);
     }
     console.log(`✓ Migrated metadata.`);
 
