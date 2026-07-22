@@ -1,42 +1,17 @@
 import { neon } from '@neondatabase/serverless';
-import { promises as fs } from 'fs';
-import path from 'path';
 
-const useNeon = Boolean(process.env.DATABASE_URL || process.env.NEON_DATABASE_URL);
-const sql = useNeon ? neon(process.env.DATABASE_URL || process.env.NEON_DATABASE_URL) : null;
+const databaseUrl = process.env.DATABASE_URL || process.env.NEON_DATABASE_URL;
 
-// JSON File Paths (For local development fallback if Neon is not set)
-const categoriesPath = path.join(process.cwd(), 'data', 'categories.json');
-const productsPath = path.join(process.cwd(), 'data', 'products.json');
-const bannersPath = path.join(process.cwd(), 'data', 'banners.json');
-const metadataPath = path.join(process.cwd(), 'data', 'metadata.json');
-
-// Helper to safely read JSON
-async function readJsonFile(filePath, defaultValue = []) {
-  try {
-    const data = await fs.readFile(filePath, 'utf8');
-    return JSON.parse(data);
-  } catch (err) {
-    return defaultValue;
-  }
+if (!databaseUrl) {
+  console.warn('Warning: DATABASE_URL environment variable is missing. Connect your database to activate database queries.');
 }
 
-// Helper to safely write JSON
-async function writeJsonFile(filePath, data) {
-  try {
-    await fs.mkdir(path.dirname(filePath), { recursive: true });
-    await fs.writeFile(filePath, JSON.stringify(data, null, 2), 'utf8');
-    return true;
-  } catch (err) {
-    console.error(`Error writing file ${filePath}:`, err);
-    return false;
-  }
-}
+const sql = databaseUrl ? neon(databaseUrl) : null;
 
 // Helper to ensure tables exist in Neon Postgres
 let tablesInitialized = false;
 async function ensureTables() {
-  if (!useNeon || tablesInitialized) return;
+  if (!sql || tablesInitialized) return;
   try {
     await sql(`
       CREATE TABLE IF NOT EXISTS categories (
@@ -96,7 +71,8 @@ async function ensureTables() {
 
 // ---------------- CATEGORY HELPERS ----------------
 export async function getCategories() {
-  if (useNeon) {
+  if (!sql) return [];
+  try {
     await ensureTables();
     const rows = await sql('SELECT * FROM categories ORDER BY name ASC');
     return rows.map(r => ({
@@ -105,12 +81,15 @@ export async function getCategories() {
       description: r.description || '',
       image: r.image || ''
     }));
+  } catch (err) {
+    console.error('getCategories Neon Error:', err);
+    return [];
   }
-  return await readJsonFile(categoriesPath, []);
 }
 
 export async function saveCategories(categories) {
-  if (useNeon) {
+  if (!sql) return false;
+  try {
     await ensureTables();
     await sql('DELETE FROM categories');
     for (const item of categories) {
@@ -120,13 +99,16 @@ export async function saveCategories(categories) {
       );
     }
     return true;
+  } catch (err) {
+    console.error('saveCategories Neon Error:', err);
+    return false;
   }
-  return await writeJsonFile(categoriesPath, categories);
 }
 
 // ---------------- PRODUCT HELPERS ----------------
 export async function getProducts() {
-  if (useNeon) {
+  if (!sql) return [];
+  try {
     await ensureTables();
     const rows = await sql('SELECT * FROM products ORDER BY created_at DESC');
     return rows.map(r => ({
@@ -152,13 +134,15 @@ export async function getProducts() {
       isNewArrival: Boolean(r.is_new_arrival),
       createdAt: r.created_at ? new Date(r.created_at).toISOString() : new Date().toISOString()
     }));
+  } catch (err) {
+    console.error('getProducts Neon Error:', err);
+    return [];
   }
-  const products = await readJsonFile(productsPath, []);
-  return products.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
 }
 
 export async function getProductByCode(code) {
-  if (useNeon) {
+  if (!sql) return null;
+  try {
     await ensureTables();
     const rows = await sql('SELECT * FROM products WHERE LOWER(code) = LOWER($1)', [code]);
     if (rows.length === 0) return null;
@@ -186,14 +170,15 @@ export async function getProductByCode(code) {
       isNewArrival: Boolean(r.is_new_arrival),
       createdAt: r.created_at ? new Date(r.created_at).toISOString() : new Date().toISOString()
     };
+  } catch (err) {
+    console.error('getProductByCode Neon Error:', err);
+    return null;
   }
-  const products = await getProducts();
-  const found = products.find(p => p.code.toLowerCase() === code.toLowerCase());
-  return found || null;
 }
 
 export async function saveProducts(products) {
-  if (useNeon) {
+  if (!sql) return false;
+  try {
     await ensureTables();
     await sql('DELETE FROM products');
     for (const item of products) {
@@ -228,13 +213,16 @@ export async function saveProducts(products) {
       ]);
     }
     return true;
+  } catch (err) {
+    console.error('saveProducts Neon Error:', err);
+    return false;
   }
-  return await writeJsonFile(productsPath, products);
 }
 
 // ---------------- BANNER HELPERS ----------------
 export async function getBanners() {
-  if (useNeon) {
+  if (!sql) return [];
+  try {
     await ensureTables();
     const rows = await sql('SELECT * FROM banners');
     return rows.map(b => ({
@@ -246,12 +234,15 @@ export async function getBanners() {
       type: b.type,
       isActive: Boolean(b.is_active)
     }));
+  } catch (err) {
+    console.error('getBanners Neon Error:', err);
+    return [];
   }
-  return await readJsonFile(bannersPath, []);
 }
 
 export async function saveBanners(banners) {
-  if (useNeon) {
+  if (!sql) return false;
+  try {
     await ensureTables();
     await sql('DELETE FROM banners');
     for (const item of banners) {
@@ -269,13 +260,16 @@ export async function saveBanners(banners) {
       );
     }
     return true;
+  } catch (err) {
+    console.error('saveBanners Neon Error:', err);
+    return false;
   }
-  return await writeJsonFile(bannersPath, banners);
 }
 
 // ---------------- AUTO-INCREMENT CODE GENERATOR ----------------
 export async function generateNextProductCode() {
-  if (useNeon) {
+  if (!sql) return 'VK-1008';
+  try {
     await ensureTables();
     let lastSerial = 1007;
     const metaRows = await sql('SELECT value FROM metadata WHERE key = $1', ['last_product_serial']);
@@ -300,29 +294,8 @@ export async function generateNextProductCode() {
       String(nextSerial)
     ]);
     return `VK-${nextSerial}`;
+  } catch (err) {
+    console.error('generateNextProductCode Neon Error:', err);
+    return 'VK-1008';
   }
-
-  const metadata = await readJsonFile(metadataPath, {});
-  let lastSerial = 1007;
-
-  if (metadata.last_product_serial) {
-    lastSerial = parseInt(metadata.last_product_serial, 10);
-  } else {
-    const products = await getProducts();
-    const serials = products
-      .map(p => {
-        const match = String(p.code).match(/VK-(\d+)/i);
-        return match ? parseInt(match[1], 10) : null;
-      })
-      .filter(Boolean);
-    if (serials.length > 0) {
-      lastSerial = Math.max(...serials);
-    }
-  }
-
-  const nextSerial = lastSerial + 1;
-  metadata.last_product_serial = String(nextSerial);
-  await writeJsonFile(metadataPath, metadata);
-
-  return `VK-${nextSerial}`;
 }

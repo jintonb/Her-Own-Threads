@@ -1,8 +1,6 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-  outputFileTracingIncludes: {
-    '/*': ['./data/**/*'],
-  },
+  /* config options here */
 };
 
 export default nextConfig;
