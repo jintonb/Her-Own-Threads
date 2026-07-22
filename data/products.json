@@ -1,5 +1,30 @@
 [
   {
+    "code": "VK-1010",
+    "name": "sari4",
+    "category": "kanchipuram-silk",
+    "price": 432432,
+    "fabric": "Katan Silk",
+    "color": "",
+    "work": "",
+    "border": "",
+    "blouseIncluded": true,
+    "length": "5.5 meters + 0.8 meter blouse",
+    "weight": "600g",
+    "occasion": "",
+    "care": "Dry Clean Only",
+    "description": "",
+    "thumbnail": "https://vasthrakatha-676206924134-ap-south-1-an.s3.ap-south-1.amazonaws.com/saree-catalog/products/banner07-1784725250378-606409744.jpg",
+    "images": [
+      "https://vasthrakatha-676206924134-ap-south-1-an.s3.ap-south-1.amazonaws.com/saree-catalog/products/media--3--1784725252065-589716663.jpg"
+    ],
+    "videos": [],
+    "isPublished": true,
+    "isFeatured": false,
+    "isNewArrival": false,
+    "createdAt": "2026-07-22T13:00:59.177Z"
+  },
+  {
     "code": "VK-1009",
     "name": "Tonic Pharmacy",
     "category": "kanchipuram-silk",
@@ -151,12 +176,12 @@
     "createdAt": "2026-07-02T15:00:00.000Z"
   },
   {
-    "code": "VK-1010",
-    "name": "sari4",
+    "code": "VK-1011",
+    "name": "jinto babu",
     "category": "kanchipuram-silk",
-    "price": 432432,
+    "price": 423423,
     "fabric": "Katan Silk",
-    "color": "",
+    "color": "Green",
     "work": "",
     "border": "",
     "blouseIncluded": true,
@@ -165,14 +190,14 @@
     "occasion": "",
     "care": "Dry Clean Only",
     "description": "",
-    "thumbnail": "https://vasthrakatha-676206924134-ap-south-1-an.s3.ap-south-1.amazonaws.com/saree-catalog/products/banner07-1784725250378-606409744.jpg",
+    "thumbnail": "https://vasthrakatha-676206924134-ap-south-1-an.s3.ap-south-1.amazonaws.com/saree-catalog/products/banner08-1784735038078-748867781.jpg",
     "images": [
-      "https://vasthrakatha-676206924134-ap-south-1-an.s3.ap-south-1.amazonaws.com/saree-catalog/products/media--3--1784725252065-589716663.jpg"
+      "https://vasthrakatha-676206924134-ap-south-1-an.s3.ap-south-1.amazonaws.com/saree-catalog/products/media--7--1784735044555-555526789.jpg"
     ],
     "videos": [],
     "isPublished": true,
     "isFeatured": false,
     "isNewArrival": false,
-    "createdAt": "2026-07-22T13:00:59.177Z"
+    "createdAt": "2026-07-22T15:44:06.874Z"
   }
 ]
