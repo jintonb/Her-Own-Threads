@@ -23,16 +23,9 @@ export default async function ProductDetailPage({ params }) {
 
   // WhatsApp Message Generation
   const storePhone = "919961768565"; // Indian country code prefix + 9961768565
-  const waMessage = `Hello,
-
-I'm interested in the following saree:
-
-Product Code: ${product.code}
-Product Name: ${product.name}
-
-Please share the price and availability.
-
-Thank you.`;
+  const waMessage = product.inStock === false
+    ? `Hello,\n\nI'm interested in the following saree (Checking restocking availability):\n\nProduct Code: ${product.code}\n\nProduct Name: ${product.name}\n\nThank you.`
+    : `Hello,\n\nI'm interested in the following saree:\n\nProduct Code: ${product.code}\n\nProduct Name: ${product.name}\n\nPlease share the price and availability.\n\nThank you.`;
 
   const encodedMessage = encodeURIComponent(waMessage);
   const whatsappUrl = `https://wa.me/${storePhone}?text=${encodedMessage}`;
@@ -63,7 +56,18 @@ Thank you.`;
 
         {/* Right: Info Panel */}
         <div className="product-info-panel">
-          <span className="product-code">Code: {product.code}</span>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', marginBottom: '0.75rem' }}>
+            <span className="product-code" style={{ marginBottom: 0 }}>Code: {product.code}</span>
+            {product.inStock === false ? (
+              <span style={{ backgroundColor: '#b71c1c', color: 'white', fontSize: '0.7rem', fontWeight: 'bold', textTransform: 'uppercase', padding: '0.2rem 0.6rem', borderRadius: '4px', letterSpacing: '0.5px' }}>
+                Out of Stock
+              </span>
+            ) : (
+              <span style={{ backgroundColor: '#2e7d32', color: 'white', fontSize: '0.7rem', fontWeight: 'bold', textTransform: 'uppercase', padding: '0.2rem 0.6rem', borderRadius: '4px', letterSpacing: '0.5px' }}>
+                In Stock
+              </span>
+            )}
+          </div>
           <h1>{product.name}</h1>
           {product.price && (
             <p className="product-price">₹{product.price.toLocaleString('en-IN')}</p>

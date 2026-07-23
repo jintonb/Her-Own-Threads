@@ -14,12 +14,13 @@ export async function GET(request) {
     const products = await getProducts();
     let filteredProducts = [...products];
 
-    // Filter by publish status (non-admins only see published)
+    // Filter by publish status: non-authenticated visitors ONLY see published items
     const authenticated = await isAuthorized(request);
-    if (!authenticated && !includeDrafts) {
+    if (!authenticated) {
       filteredProducts = filteredProducts.filter(p => p.isPublished === true);
-    } else if (!includeDrafts) {
-      if (!authenticated) {
+    } else {
+      // Authenticated admins only see drafts if includeDrafts query parameter is explicitly set to true
+      if (!includeDrafts) {
         filteredProducts = filteredProducts.filter(p => p.isPublished === true);
       }
     }

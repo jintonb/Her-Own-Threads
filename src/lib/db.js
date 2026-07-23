@@ -49,9 +49,16 @@ async function ensureTables() {
         is_published BOOLEAN DEFAULT TRUE,
         is_featured BOOLEAN DEFAULT FALSE,
         is_new_arrival BOOLEAN DEFAULT FALSE,
-        created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+        created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+        in_stock BOOLEAN DEFAULT TRUE
       );
     `);
+    
+    // Run migration query to guarantee 'in_stock' column exists on existing databases
+    await queryDb(`
+      ALTER TABLE products ADD COLUMN IF NOT EXISTS in_stock BOOLEAN DEFAULT TRUE;
+    `);
+
     await queryDb(`
       CREATE TABLE IF NOT EXISTS banners (
         id VARCHAR(100) PRIMARY KEY,
@@ -138,7 +145,8 @@ export async function getProducts() {
       isPublished: Boolean(r.is_published),
       isFeatured: Boolean(r.is_featured),
       isNewArrival: Boolean(r.is_new_arrival),
-      createdAt: r.created_at ? new Date(r.created_at).toISOString() : new Date().toISOString()
+      createdAt: r.created_at ? new Date(r.created_at).toISOString() : new Date().toISOString(),
+      inStock: r.in_stock === undefined ? true : Boolean(r.in_stock)
     }));
   } catch (err) {
     console.error('getProducts Neon Error:', err);
@@ -174,7 +182,8 @@ export async function getProductByCode(code) {
       isPublished: Boolean(r.is_published),
       isFeatured: Boolean(r.is_featured),
       isNewArrival: Boolean(r.is_new_arrival),
-      createdAt: r.created_at ? new Date(r.created_at).toISOString() : new Date().toISOString()
+      createdAt: r.created_at ? new Date(r.created_at).toISOString() : new Date().toISOString(),
+      inStock: r.in_stock === undefined ? true : Boolean(r.in_stock)
     };
   } catch (err) {
     console.error('getProductByCode Neon Error:', err);
@@ -192,8 +201,8 @@ export async function saveProducts(products) {
         INSERT INTO products (
           code, name, category, price, fabric, color, work, border,
           blouse_included, length, weight, occasion, care, description,
-          thumbnail, images, videos, is_published, is_featured, is_new_arrival, created_at
-        ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19, $20, $21)
+          thumbnail, images, videos, is_published, is_featured, is_new_arrival, created_at, in_stock
+        ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19, $20, $21, $22)
       `, [
         item.code,
         item.name,
@@ -215,7 +224,8 @@ export async function saveProducts(products) {
         item.isPublished ? true : false,
         item.isFeatured ? true : false,
         item.isNewArrival ? true : false,
-        item.createdAt || new Date().toISOString()
+        item.createdAt || new Date().toISOString(),
+        item.inStock !== false ? true : false
       ]);
     }
     return true;

@@ -37,6 +37,7 @@ export default function AdminProductsPage() {
     isPublished: true,
     isFeatured: false,
     isNewArrival: false,
+    inStock: true,
   };
   const [form, setForm] = useState(initialFormState);
   const [selectedProductCode, setSelectedProductCode] = useState(''); // Tracking editing code
@@ -335,6 +336,7 @@ export default function AdminProductsPage() {
                 <th>Category</th>
                 <th>Price</th>
                 <th>Status</th>
+                <th>Stock</th>
                 <th>Featured</th>
                 <th>New Arrival</th>
                 <th>Actions</th>
@@ -359,6 +361,11 @@ export default function AdminProductsPage() {
                   <td>
                     <span className={`toggle-badge ${p.isPublished ? 'toggle-badge-yes' : 'toggle-badge-no'}`}>
                       {p.isPublished ? 'Published' : 'Draft'}
+                    </span>
+                  </td>
+                  <td>
+                    <span className={`toggle-badge ${p.inStock !== false ? 'toggle-badge-yes' : 'toggle-badge-no'}`}>
+                      {p.inStock !== false ? 'In Stock' : 'Out of Stock'}
                     </span>
                   </td>
                   <td>
@@ -612,6 +619,16 @@ export default function AdminProductsPage() {
                       onChange={handleChange}
                     />
                     Blouse Piece Included
+                  </label>
+
+                  <label className="toggle-group">
+                    <input
+                      type="checkbox"
+                      name="inStock"
+                      checked={form.inStock}
+                      onChange={handleChange}
+                    />
+                    In Stock
                   </label>
 
                   <label className="toggle-group">
