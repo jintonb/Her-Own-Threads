@@ -1,6 +1,6 @@
 export const metadata = {
-  title: "About Us | Her Own Threads Saree Atelier",
-  description: "Learn about the heritage, craftsmanship, and story of Her Own Threads - Curating the finest heritage sarees.",
+  title: "About Us | Your Own Threads Saree Atelier",
+  description: "Learn about the heritage, craftsmanship, and story of Your Own Threads - Curating the finest heritage sarees.",
 };
 
 export default function AboutPage() {
@@ -10,7 +10,7 @@ export default function AboutPage() {
       
       <div className="static-content">
         <p>
-          Founded on a deep-rooted passion for Indian textiles and heritage weaves, <strong>Her Own Threads</strong> was created to celebrate and sustain the art of fine saree weaving. Based in Kerala, India, we work closely with master artisans across traditional weaving clusters to bring you a hand-curated collection of timeless sarees.
+          Founded on a deep-rooted passion for Indian textiles and heritage weaves, <strong>Your Own Threads</strong> was created to celebrate and sustain the art of fine saree weaving. Based in Kerala, India, we work closely with master artisans across traditional weaving clusters to bring you a hand-curated collection of timeless sarees.
         </p>
 
         <div className="craftsmanship-callout">
@@ -21,7 +21,7 @@ export default function AboutPage() {
         </div>
 
         <p>
-          The name <em>Her Own Threads</em> represents our dedication to celebrating the individual style, story, and heritage of every woman through fine handcrafted textiles.
+          The name <em>Your Own Threads</em> represents our dedication to celebrating the individual style, story, and heritage of every woman through fine handcrafted textiles.
         </p>
 
         <h2 style={{ marginTop: '3rem', marginBottom: '1rem', fontFamily: 'var(--font-serif)', color: 'var(--primary)' }}>Our Vision</h2>
@@ -29,7 +29,7 @@ export default function AboutPage() {
           Our vision is to build an accessible bridge between heritage weavers and modern saree connoisseurs. In an era of rapid fast-fashion, we stand as advocates for slow fashion, promoting pieces that carry cultural weight, look exceptionally elegant, and can be passed down through generations.
         </p>
 
-        <h2 style={{ marginTop: '3rem', marginBottom: '1rem', fontFamily: 'var(--font-serif)', color: 'var(--primary)' }}>Why Choose Her Own Threads?</h2>
+        <h2 style={{ marginTop: '3rem', marginBottom: '1rem', fontFamily: 'var(--font-serif)', color: 'var(--primary)' }}>Why Choose Your Own Threads?</h2>
         <p>
           We differentiate ourselves by refusing duplicates and powerloom imitations in our premium ranges. When you browse our catalog, you are looking at pure mulberry silk, genuine silver/gold plated zari thread, and hand-loomed textures.
         </p>

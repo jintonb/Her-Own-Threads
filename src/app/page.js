@@ -112,14 +112,14 @@ export default async function HomePage() {
         <div className="about-widget-img-box">
           <img
             src={ourStoryImg}
-            alt="Her Own Threads Handloom Craft"
+            alt="Your Own Threads Handloom Craft"
           />
         </div>
         <div className="about-widget-content">
-          <h2>Her Own Threads</h2>
+          <h2>Your Own Threads</h2>
           <p className="lead-text"><em>Where elegance meets authenticity.</em></p>
           <p>
-            Welcome to Her Own Threads. We believe a saree is not just an outfit—it is an art form, a heritage, and a standard of grace. We bring you hand-selected, premium quality sarees that represent the pinnacle of Indian weaving traditions.
+            Welcome to Your Own Threads. We believe a saree is not just an outfit—it is an art form, a heritage, and a standard of grace. We bring you hand-selected, premium quality sarees that represent the pinnacle of Indian weaving traditions.
           </p>
           <p>
             From the heavy gold border Kanchipurams to the ethereal lightweight Organza drapes, each piece is selected to highlight the pure beauty of traditional craftsmanship. Explore our collections online and enquire directly for pricing and availability.

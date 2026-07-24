@@ -29,7 +29,7 @@ export default function Navbar() {
       <nav className="navbar-content">
         {/* Brand Name Logo */}
         <Link href="/" className="navbar-logo">
-          <span className="logo-text">Her Own Threads</span>
+          <span className="logo-text">Your Own Threads</span>
           <span className="logo-tagline">The Saree Atelier</span>
         </Link>
 

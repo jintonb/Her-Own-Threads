@@ -53,7 +53,7 @@ export async function POST(request) {
       });
 
       const contentType = file.type || (fileExtension.endsWith('.mp4') ? 'video/mp4' : 'image/jpeg');
-      const s3Key = `saree-catalog/${folder}/${filename}`;
+      const s3Key = `your-own-threads/${folder}/${filename}`;
 
       const command = new PutObjectCommand({
         Bucket: bucketName,
